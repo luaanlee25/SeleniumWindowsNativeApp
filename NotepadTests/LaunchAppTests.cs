@@ -1,27 +1,23 @@
 ﻿using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Windows;
+using OpenQA.Selenium.Remote;
 
 namespace NotepadTests;
 
 [TestFixture]
 public class LaunchAppTests
 {
-    private WindowsDriver _driver;
+    private static WindowsDriver<WindowsElement> _driver;
     private const string AppPath = @"C:\Windows\System32\notepad.exe";
     
     [SetUp]
     public void Setup()
     {
         // Initialize any required resources or state before each test
-        var options = new AppiumOptions
-        {
-            App = AppPath,
-            AutomationName = "Windows",
-            PlatformName = "Windows",
-            DeviceName = "WindowsPC",
-        };
-        _driver = new WindowsDriver(new Uri("http://127.0.0.1:4723"), options);
-        _driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+        var options = new DesiredCapabilities();
+        options.SetCapability("app", AppPath);
+
+        _driver = new WindowsDriver<WindowsElement>(new Uri("http://127.0.0.1:4723"), options);
         
         Thread.Sleep(3000);
         Assert.That(_driver, Is.Not.Null, "Driver should be initialized successfully.");
@@ -51,7 +47,15 @@ public class LaunchAppTests
     [TearDown]
     public void TearDown()
     {
-        _driver.CloseApp();
-        _driver.Dispose();
+        try
+        {
+            _driver.Close();
+        }
+        catch
+        {
+        }
+        
+        _driver.Quit();
+        _driver = null;
     }
 }
